@@ -45,7 +45,7 @@ async function getExpiredActivities(req, res) {
   const now = new Date();
   const activities = await Activity.find({
     student: req.studentId,
-    type: { $in: ["assignment", "project", "midsem"] },
+    type: { $in: ["assignment", "project", "midsem", "semester_exam"] },
     $or: [{ endTime: { $lt: now } }, { endTime: null, startTime: { $lt: now } }],
   }).sort({ startTime: -1 });
 
