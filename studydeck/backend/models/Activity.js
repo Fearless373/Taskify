@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const ACTIVITY_TYPES = ["assignment", "project", "midsem", "lecture"];
+const ACTIVITY_TYPES = ["assignment", "project", "midsem", "semester_exam", "lecture"];
 
 const activitySchema = new mongoose.Schema(
   {
