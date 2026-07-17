@@ -122,6 +122,7 @@ export default function Dashboard() {
               <option value="assignment">Assignment</option>
               <option value="project">Project work</option>
               <option value="midsem">Midsem exam</option>
+              <option value="semester_exam">End of semester exam</option>
               <option value="lecture">Lecture</option>
             </select>
 
@@ -158,6 +159,7 @@ function groupByType(activities) {
     assignment: activities.filter((a) => a.type === "assignment"),
     project: activities.filter((a) => a.type === "project"),
     midsem: activities.filter((a) => a.type === "midsem"),
+    semester_exam: activities.filter((a) => a.type === "semester_exam"),
   };
 }
 
@@ -167,6 +169,7 @@ function sectionLabel(type) {
     assignment: "Assignments",
     project: "Project work",
     midsem: "Midsem exams",
+    semester_exam: "End of semester exams",
   };
   return map[type] || type;
 }
