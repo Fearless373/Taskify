@@ -2,6 +2,7 @@ const TYPE_LABELS = {
   assignment: "Assignment",
   project: "Project work",
   midsem: "Midsem exam",
+  semester_exam: "End of semester exam",
   lecture: "Lecture",
 };
 
