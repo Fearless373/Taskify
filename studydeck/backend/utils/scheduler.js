@@ -63,7 +63,13 @@ function oneHourMessage(activity) {
 }
 
 function labelFor(type) {
-  const map = { assignment: "Assignment", project: "Project work", midsem: "Midsem exam", lecture: "Lecture" };
+  const map = {
+    assignment: "Assignment",
+    project: "Project work",
+    midsem: "Midsem exam",
+    semester_exam: "End of semester exam",
+    lecture: "Lecture",
+  };
   return map[type] || "Activity";
 }
 
