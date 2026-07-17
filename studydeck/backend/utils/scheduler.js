@@ -10,6 +10,7 @@ function startScheduler() {
     try {
       await handleDayStartNotifications();
       await handleOneHourNotifications();
+      await handleCustomNotifications();
     } catch (err) {
       console.error("Scheduler error:", err.message);
     }
@@ -17,7 +18,6 @@ function startScheduler() {
   console.log("Notification scheduler started (runs every minute)");
 }
 
-// Fires once, at the very start of the calendar day an activity begins.
 async function handleDayStartNotifications() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -36,11 +36,10 @@ async function handleDayStartNotifications() {
   }
 }
 
-// Fires once, roughly 1 hour before the activity's start time.
 async function handleOneHourNotifications() {
   const now = new Date();
   const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
-  const windowStart = new Date(now.getTime() + 59 * 60 * 1000); // small window so cron minute-ticks don't miss it
+  const windowStart = new Date(now.getTime() + 59 * 60 * 1000);
 
   const activities = await Activity.find({
     startTime: { $gte: windowStart, $lte: inOneHour },
@@ -51,6 +50,34 @@ async function handleOneHourNotifications() {
     await createAndSendNotification(activity, "Starting in 1 hour", oneHourMessage(activity));
     activity.oneHourNotified = true;
     await activity.save();
+  }
+}
+
+async function handleCustomNotifications() {
+  const now = new Date();
+
+  const dueNotifications = await Notification.find({
+    source: "custom",
+    isSent: false,
+    triggerAt: { $lte: now },
+  });
+
+  for (const notification of dueNotifications) {
+    try {
+      const student = await Student.findById(notification.student);
+      if (student) {
+        await sendEmail({
+          to: student.email,
+          subject: `StudyDeck reminder: ${notification.title}`,
+          html: `<p>Hi ${student.fullName},</p><p>${notification.message || notification.title}</p>`,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send custom notification email:", err.message);
+    }
+
+    notification.isSent = true;
+    await notification.save();
   }
 }
 
@@ -98,7 +125,6 @@ async function createAndSendNotification(activity, title, message) {
       });
     }
   } catch (err) {
-    // Email failure shouldn't stop the in-app notification from existing
     console.error("Failed to send notification email:", err.message);
   }
 
