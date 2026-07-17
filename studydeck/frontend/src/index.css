@@ -331,6 +331,7 @@ a { color: var(--ink); }
 .activity-card.type-assignment { border-left-color: var(--amber); }
 .activity-card.type-project { border-left-color: var(--sage); }
 .activity-card.type-midsem { border-left-color: var(--rust); }
+.activity-card.type-semester_exam { border-left-color: #7A3B6E; }
 .activity-card.type-lecture { border-left-color: var(--slate); }
 
 .activity-card-eyebrow {
