@@ -18,6 +18,7 @@ function startScheduler() {
   console.log("Notification scheduler started (runs every minute)");
 }
 
+// Fires once, at the very start of the calendar day an activity begins.
 async function handleDayStartNotifications() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -36,10 +37,11 @@ async function handleDayStartNotifications() {
   }
 }
 
+// Fires once, roughly 1 hour before the activity's start time.
 async function handleOneHourNotifications() {
   const now = new Date();
   const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
-  const windowStart = new Date(now.getTime() + 59 * 60 * 1000);
+  const windowStart = new Date(now.getTime() + 59 * 60 * 1000); // small window so cron minute-ticks don't miss it
 
   const activities = await Activity.find({
     startTime: { $gte: windowStart, $lte: inOneHour },
@@ -53,6 +55,7 @@ async function handleOneHourNotifications() {
   }
 }
 
+// Fires student-created custom reminders once their scheduled time arrives.
 async function handleCustomNotifications() {
   const now = new Date();
 
@@ -125,6 +128,7 @@ async function createAndSendNotification(activity, title, message) {
       });
     }
   } catch (err) {
+    // Email failure shouldn't stop the in-app notification from existing
     console.error("Failed to send notification email:", err.message);
   }
 

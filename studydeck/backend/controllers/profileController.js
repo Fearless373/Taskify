@@ -6,6 +6,8 @@ const sendEmail = require("../utils/sendEmail");
 const EDITABLE_FIELDS = ["fullName", "course", "phoneNumber", "email", "profilePicture"];
 
 // POST /api/profile/update  (auth required)
+// Stores the requested changes as "pending" and emails a confirmation link.
+// Nothing on the account actually changes until the link is clicked.
 async function requestProfileUpdate(req, res) {
   try {
     const student = await Student.findById(req.studentId);
@@ -34,6 +36,7 @@ async function requestProfileUpdate(req, res) {
     }
 
     if (changes.profilePicture && changes.profilePicture.length > 3_000_000) {
+      // Roughly 2MB decoded; keeps documents well under MongoDB's 16MB limit
       return res.status(400).json({ message: "Profile picture is too large. Please use a smaller image." });
     }
 
@@ -45,16 +48,33 @@ async function requestProfileUpdate(req, res) {
     student.updateTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await student.save();
 
+    // If the email itself is changing, the confirmation must go to the NEW
+    // address, to prove the student actually owns it. Otherwise, send to
+    // the current address on file.
     const destinationEmail = changes.email || student.email;
     const confirmUrl = `${process.env.CLIENT_URL}/confirm-update?token=${updateToken}&id=${student._id}`;
 
     const changeSummary = summarizeChanges(changes);
 
-    await sendEmail({
-      to: destinationEmail,
-      subject: "Confirm your StudyDeck profile update",
-      html: `<p>Hi ${student.fullName},</p><p>You requested to update your profile: ${changeSummary}.</p><p>Confirm this change by clicking the link below (expires in 1 hour):</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
-    });
+    try {
+      await sendEmail({
+        to: destinationEmail,
+        subject: "Confirm your StudyDeck profile update",
+        html: `<p>Hi ${student.fullName},</p><p>You requested to update your profile: ${changeSummary}.</p><p>Confirm this change by clicking the link below (expires in 1 hour):</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send profile update confirmation email:", emailErr.message);
+      // Roll back so the student isn't left with a pending change they were never notified about
+      student.pendingUpdate = null;
+      student.updateToken = undefined;
+      student.updateTokenExpires = undefined;
+      await student.save();
+
+      return res.status(502).json({
+        message:
+          "Could not send the confirmation email to that address. If you're using Resend's test sender (onboarding@resend.dev), it can only deliver to your own Resend account email - verify a domain in Resend to send to other addresses.",
+      });
+    }
 
     return res.json({
       message: `A confirmation link has been sent to ${destinationEmail}. Your profile will update once you confirm.`,
@@ -65,7 +85,7 @@ async function requestProfileUpdate(req, res) {
   }
 }
 
-// POST /api/profile/confirm  (public - the token itself is the credential)
+// POST /api/profile/confirm  (public - no auth, the token itself is the credential)
 async function confirmProfileUpdate(req, res) {
   try {
     const { id, token } = req.body;
@@ -90,6 +110,7 @@ async function confirmProfileUpdate(req, res) {
         student[field] = changes[field];
       }
     }
+    // Changing to a new, self-confirmed email counts as verified
     if (changes.email) {
       student.isEmailVerified = true;
     }

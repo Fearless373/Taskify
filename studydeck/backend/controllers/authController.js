@@ -36,6 +36,7 @@ async function signup(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+    const hashedVerificationToken = crypto.createHash("sha256").update(emailVerificationToken).digest("hex");
 
     const student = await Student.create({
       fullName,
@@ -44,7 +45,7 @@ async function signup(req, res) {
       course,
       email: email.toLowerCase(),
       password: hashedPassword,
-      emailVerificationToken,
+      emailVerificationToken: hashedVerificationToken,
       emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
@@ -171,4 +172,65 @@ async function getMe(req, res) {
   return res.json({ student: student.toSafeObject() });
 }
 
-module.exports = { signup, signin, forgotPassword, resetPassword, getMe };
+// POST /api/auth/verify-email
+async function verifyEmail(req, res) {
+  try {
+    const { id, token } = req.body;
+    if (!id || !token) {
+      return res.status(400).json({ message: "Missing verification details" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const student = await Student.findOne({
+      _id: id,
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: new Date() },
+    });
+
+    if (!student) {
+      return res.status(400).json({ message: "Verification link is invalid or has expired" });
+    }
+
+    student.isEmailVerified = true;
+    student.emailVerificationToken = undefined;
+    student.emailVerificationExpires = undefined;
+    await student.save();
+
+    return res.json({ message: "Email verified successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Something went wrong verifying your email" });
+  }
+}
+
+// POST /api/auth/resend-verification
+async function resendVerification(req, res) {
+  try {
+    const student = await Student.findById(req.studentId);
+    if (!student) return res.status(404).json({ message: "Student not found" });
+    if (student.isEmailVerified) {
+      return res.json({ message: "Your email is already verified" });
+    }
+
+    const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+    const hashedVerificationToken = crypto.createHash("sha256").update(emailVerificationToken).digest("hex");
+
+    student.emailVerificationToken = hashedVerificationToken;
+    student.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await student.save();
+
+    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${emailVerificationToken}&id=${student._id}`;
+    await sendEmail({
+      to: student.email,
+      subject: "Verify your StudyDeck account",
+      html: `<p>Hi ${student.fullName},</p><p>Please verify your account by clicking the link below:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    });
+
+    return res.json({ message: "Verification email sent" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Could not resend verification email" });
+  }
+}
+
+module.exports = { signup, signin, forgotPassword, resetPassword, getMe, verifyEmail, resendVerification };

@@ -13,13 +13,20 @@ custom reminders — with email-based signup verification and password reset.
 
 - Sign up (full name, student ID, phone, course, email, password + confirm)
 - Sign in with student ID + password
+- Email verification link after signup (with a working confirmation page)
 - Forgot password → emailed reset link that **expires after 1 hour**
-- Create / edit / delete activities: assignments, project work, midsem exams, lectures
+- Editable profile: name, course, phone number, email, and profile picture
+  - Changing email or phone requires clicking a confirmation link sent by
+    email before the change takes effect (name/course/picture apply
+    immediately)
+- Create / edit / delete activities: assignments, project work, midsem exams,
+  end-of-semester exams, and lectures
 - Automatic notifications:
   - At the **start of the day** an activity is due
   - **1 hour before** the activity starts
-- Expired activities view (assignments, project work, midsems)
-- Create / edit / delete custom reminders
+- Expired activities view, with a **Clear all expired** button
+- Create / edit / delete custom reminders, plus a **Clear all** button and
+  swipe-to-delete on mobile (or the "Clear" button on desktop)
 
 ## Project structure
 

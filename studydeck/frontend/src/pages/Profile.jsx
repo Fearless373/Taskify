@@ -17,8 +17,22 @@ export default function Profile() {
   const [pictureChanged, setPictureChanged] = useState(false);
   const [status, setStatus] = useState(null); // { type: 'success'|'error', message }
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
 
   if (!student) return null;
+
+  async function handleResendVerification() {
+    setResending(true);
+    setStatus(null);
+    try {
+      const res = await api.post("/auth/resend-verification");
+      setStatus({ type: "success", message: res.data.message });
+    } catch (err) {
+      setStatus({ type: "error", message: err.response?.data?.message || "Could not resend verification email" });
+    } finally {
+      setResending(false);
+    }
+  }
 
   function updateField(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -81,6 +95,15 @@ export default function Profile() {
         </div>
       </div>
 
+      {!student.isEmailVerified && (
+        <div className="verification-banner">
+          <span>Your email address isn't verified yet.</span>
+          <button className="link-btn" onClick={handleResendVerification} disabled={resending}>
+            {resending ? "Sending..." : "Resend verification email"}
+          </button>
+        </div>
+      )}
+
       <form className="profile-card profile-form" onSubmit={handleSubmit}>
         {status && (
           <div className={status.type === "success" ? "auth-success" : "auth-error"}>{status.message}</div>
@@ -118,8 +141,7 @@ export default function Profile() {
         <label>Email address</label>
         <input type="email" value={form.email} onChange={updateField("email")} required />
         <p className="profile-field-hint">
-          {student.isEmailVerified ? "Verified" : "Not yet verified"} · changing email or phone requires
-          confirming via a link sent to your email
+          Changing email or phone requires confirming via a link sent to your email.
         </p>
 
         <button type="submit" className="btn-primary" disabled={submitting}>

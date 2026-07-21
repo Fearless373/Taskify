@@ -82,6 +82,7 @@ async function updateActivity(req, res) {
     }
     if (startTime !== undefined) {
       activity.startTime = new Date(startTime);
+      // Reset notification flags if the start time changes so reminders re-fire correctly
       activity.dayStartNotified = false;
       activity.oneHourNotified = false;
     }

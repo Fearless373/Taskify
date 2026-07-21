@@ -9,6 +9,7 @@ const studentSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
 
+    // Base64 data URI of a resized profile picture (kept small by the frontend before upload)
     profilePicture: { type: String, default: "" },
 
     isEmailVerified: { type: Boolean, default: false },
@@ -18,6 +19,7 @@ const studentSchema = new mongoose.Schema(
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
 
+    // Holds a proposed profile change until the student confirms it by email
     pendingUpdate: { type: mongoose.Schema.Types.Mixed, default: null },
     updateToken: { type: String },
     updateTokenExpires: { type: Date },
@@ -25,6 +27,7 @@ const studentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Never send password or tokens back in API responses
 studentSchema.methods.toSafeObject = function () {
   const obj = this.toObject();
   delete obj.password;
