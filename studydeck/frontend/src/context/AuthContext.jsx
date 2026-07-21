@@ -25,13 +25,23 @@ export function AuthProvider({ children }) {
     setStudent(studentData);
   }
 
+  async function refreshStudent() {
+    try {
+      const res = await api.get("/auth/me");
+      setStudent(res.data.student);
+      return res.data.student;
+    } catch (err) {
+      return null;
+    }
+  }
+
   function logout() {
     localStorage.removeItem("studydeck_token");
     setStudent(null);
   }
 
   return (
-    <AuthContext.Provider value={{ student, loading, loginSuccess, logout }}>
+    <AuthContext.Provider value={{ student, loading, loginSuccess, logout, refreshStudent }}>
       {children}
     </AuthContext.Provider>
   );
