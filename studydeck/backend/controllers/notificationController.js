@@ -65,4 +65,16 @@ async function deleteNotification(req, res) {
   return res.json({ message: "Notification deleted" });
 }
 
-module.exports = { getNotifications, createNotification, updateNotification, deleteNotification };
+// DELETE /api/notifications  (clear all, for the student)
+async function clearAllNotifications(req, res) {
+  const result = await Notification.deleteMany({ student: req.studentId });
+  return res.json({ message: "All notifications cleared", deletedCount: result.deletedCount });
+}
+
+module.exports = {
+  getNotifications,
+  createNotification,
+  updateNotification,
+  deleteNotification,
+  clearAllNotifications,
+};
