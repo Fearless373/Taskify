@@ -9,22 +9,28 @@ const studentSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
 
+    profilePicture: { type: String, default: "" },
+
     isEmailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String },
     emailVerificationExpires: { type: Date },
 
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+
+    pendingUpdate: { type: mongoose.Schema.Types.Mixed, default: null },
+    updateToken: { type: String },
+    updateTokenExpires: { type: Date },
   },
   { timestamps: true }
 );
 
-// Never send password or tokens back in API responses
 studentSchema.methods.toSafeObject = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.emailVerificationToken;
   delete obj.resetPasswordToken;
+  delete obj.updateToken;
   return obj;
 };
 
