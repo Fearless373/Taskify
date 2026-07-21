@@ -7,19 +7,35 @@ export default function ExpiredActivities() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    loadExpired();
+  }, []);
+
+  function loadExpired() {
+    setLoading(true);
     api
       .get("/activities/expired")
       .then((res) => setActivities(res.data.activities))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  async function handleClearAll() {
+    if (!confirm("Clear all expired activities? This can't be undone.")) return;
+    await api.delete("/activities/expired");
+    setActivities([]);
+  }
 
   return (
     <div className="page-container">
       <div className="page-header">
         <div>
           <h1>Expired</h1>
-          <p className="page-subtitle">Assignments, project work, and midsems whose time has passed.</p>
+          <p className="page-subtitle">Assignments, project work, midsems, and semester exams whose time has passed.</p>
         </div>
+        {activities.length > 0 && (
+          <button className="btn-secondary" onClick={handleClearAll}>
+            Clear all expired
+          </button>
+        )}
       </div>
 
       {loading && <p>Loading...</p>}

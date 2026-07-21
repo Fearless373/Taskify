@@ -66,9 +66,14 @@ export default function Notifications() {
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this reminder?")) return;
     await api.delete(`/notifications/${id}`);
-    loadNotifications();
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+  }
+
+  async function handleClearAll() {
+    if (!confirm("Clear all notifications? This can't be undone.")) return;
+    await api.delete("/notifications");
+    setNotifications([]);
   }
 
   return (
@@ -82,6 +87,14 @@ export default function Notifications() {
           + New reminder
         </button>
       </div>
+
+      {notifications.length > 0 && (
+        <div className="notifications-toolbar">
+          <button className="link-btn danger" onClick={handleClearAll}>
+            Clear all notifications
+          </button>
+        </div>
+      )}
 
       {loading && <p>Loading...</p>}
       {!loading && notifications.length === 0 && (
