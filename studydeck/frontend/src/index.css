@@ -510,8 +510,123 @@ a { color: var(--ink); }
 .profile-label { color: var(--ink-soft); font-weight: 600; }
 .profile-value { color: var(--ink); }
 
+/* Editable profile form (reuses .profile-card as the outer wrapper) */
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 28px;
+}
+
+.profile-form label {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 14px 0 6px;
+  color: var(--ink-soft);
+}
+
+.profile-form input {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.profile-form input:disabled {
+  color: var(--ink-soft);
+  background: var(--paper);
+  opacity: 0.7;
+}
+
+.profile-field-hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
+
+.profile-picture-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 8px;
+}
+
+.profile-picture-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--slate-soft);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-picture-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-picture-initial {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--slate);
+}
+
+.profile-picture-btn {
+  display: inline-block;
+  cursor: pointer;
+  margin-top: 0;
+}
+
+.profile-picture-hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+}
+
+/* ---------- Notifications toolbar ---------- */
+
+.notifications-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+/* ---------- Swipe to delete (notifications) ---------- */
+
+.notification-swipe-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.notification-swipe-delete-hint {
+  position: absolute;
+  inset: 0;
+  background: var(--rust);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 24px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notification-swipe-wrapper .notification-card {
+  position: relative;
+  touch-action: pan-y;
+}
+
 @media (max-width: 640px) {
   .navbar { flex-wrap: wrap; gap: 12px; padding: 14px 18px; }
   .navbar-links { gap: 14px; order: 3; width: 100%; overflow-x: auto; }
   .page-container { padding: 24px 18px 60px; }
+  .profile-picture-row { flex-direction: column; align-items: flex-start; }
 }

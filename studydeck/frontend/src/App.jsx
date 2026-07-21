@@ -11,6 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import ExpiredActivities from "./pages/ExpiredActivities";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import VerifyEmail from "./pages/VerifyEmail";
+import ConfirmUpdate from "./pages/ConfirmUpdate";
 
 function Shell({ children }) {
   return (
@@ -37,6 +39,8 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/confirm-update" element={<ConfirmUpdate />} />
 
           <Route
             path="/dashboard"
