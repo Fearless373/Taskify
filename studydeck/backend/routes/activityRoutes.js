@@ -4,6 +4,7 @@ const {
   createActivity,
   getUpcomingActivities,
   getExpiredActivities,
+  clearExpiredActivities,
   updateActivity,
   deleteActivity,
 } = require("../controllers/activityController");
@@ -13,6 +14,7 @@ router.use(requireAuth);
 
 router.get("/", getUpcomingActivities);
 router.get("/expired", getExpiredActivities);
+router.delete("/expired", clearExpiredActivities);
 router.post("/", createActivity);
 router.put("/:id", updateActivity);
 router.delete("/:id", deleteActivity);
