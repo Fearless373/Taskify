@@ -52,6 +52,18 @@ async function getExpiredActivities(req, res) {
   return res.json({ activities });
 }
 
+// DELETE /api/activities/expired
+async function clearExpiredActivities(req, res) {
+  const now = new Date();
+  const result = await Activity.deleteMany({
+    student: req.studentId,
+    type: { $in: ["assignment", "project", "midsem", "semester_exam"] },
+    $or: [{ endTime: { $lt: now } }, { endTime: null, startTime: { $lt: now } }],
+  });
+
+  return res.json({ message: "Expired activities cleared", deletedCount: result.deletedCount });
+}
+
 // PUT /api/activities/:id
 async function updateActivity(req, res) {
   try {
@@ -70,7 +82,6 @@ async function updateActivity(req, res) {
     }
     if (startTime !== undefined) {
       activity.startTime = new Date(startTime);
-      // Reset notification flags if the start time changes so reminders re-fire correctly
       activity.dayStartNotified = false;
       activity.oneHourNotified = false;
     }
@@ -95,6 +106,7 @@ module.exports = {
   createActivity,
   getUpcomingActivities,
   getExpiredActivities,
+  clearExpiredActivities,
   updateActivity,
   deleteActivity,
 };
